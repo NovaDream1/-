@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>五一倒计时</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px; height: 2px;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--d) ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from { opacity: 0.2; transform: scale(1); }
+      to   { opacity: 1;   transform: scale(1.5); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .title {
+      font-size: 1.4rem;
+      letter-spacing: 8px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .target {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 48px;
+      letter-spacing: 2px;
+    }
+
+    .countdown {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 100px;
+    }
+
+    .number {
+      font-size: 5rem;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(180deg, #fff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(165,180,252,0.4));
+      transition: transform 0.15s ease;
+      min-width: 2ch;
+      text-align: center;
+    }
+
+    .number.tick {
+      transform: scale(1.08);
+    }
+
+    .label {
+      font-size: 0.85rem;
+      letter-spacing: 4px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+
+    .separator {
+      font-size: 4rem;
+      font-weight: 200;
+      color: rgba(255,255,255,0.15);
+      line-height: 1;
+      padding-top: 12px;
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
+    }
+
+    .progress-bar {
+      margin-top: 56px;
+      width: 480px;
+      max-width: 90vw;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #a78bfa, #f472b6);
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 1px;
+    }
+
+    .message {
+      margin-top: 32px;
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 2px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .message.show { opacity: 1; }
+
+    /* Firework burst on arrival */
+    .fireworks {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+    }
+
+    .firework {
+      position: absolute;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      animation: explode 1.2s ease-out forwards;
+    }
+
+    @keyframes explode {
+      0%   { transform: translate(0,0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <div class="title">Countdown</div>
+  <div class="target">2026 年 5 月 1 日</div>
+
+  <div class="countdown">
+    <div class="unit">
+      <div class="number" id="days">00</div>
+      <div class="label">Days</div>
+    </div>
+    <div class="separator">:</div>
+    <div class="unit">
+      <div class="number" id="hours">00</div>
+      <div class="label">Hours</div>
+    </div>
+    <div class="separator">:</div>
+    <div class="unit">
+      <div class="number" id="minutes">00</div>
+      <div class="label">Minutes</div>
+    </div>
+    <div class="separator">:</div>
+    <div class="unit">
+      <div class="number" id="seconds">00</div>
+      <div class="label">Seconds</div>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label">
+      <span>4月19日</span>
+      <span>5月1日</span>
+    </div>
+  </div>
+
+  <div class="message" id="message">🎉 五一劳动节快乐！</div>
+</div>
+
+<div class="fireworks" id="fireworks"></div>
+
+<script>
+  // Target: May 1, 2026
+  const TARGET = new Date('2026-05-01T00:00:00').getTime();
+  const START  = new Date('2026-04-19T00:00:00').getTime();
+  const TOTAL  = TARGET - START;
+
+  const $ = id => document.getElementById(id);
+  let arrived = false;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick(el) {
+    el.classList.add('tick');
+    setTimeout(() => el.classList.remove('tick'), 150);
+  }
+
+  function firework(x, y, color) {
+    const fw = document.createElement('div');
+    fw.className = 'firework';
+    fw.style.left = x + 'px';
+    fw.style.top  = y + 'px';
+    fw.style.background = color;
+    const angle  = Math.random() * Math.PI * 2;
+    const radius = 60 + Math.random() * 100;
+    fw.style.setProperty('--dx', Math.cos(angle) * radius + 'px');
+    fw.style.setProperty('--dy', Math.sin(angle) * radius + 'px');
+    $('fireworks').appendChild(fw);
+    setTimeout(() => fw.remove(), 1200);
+  }
+
+  function launchFireworks() {
+    const colors = ['#f472b6','#a78bfa','#60a5fa','#34d399','#facc15','#fb923c'];
+    let bursts = 0;
+    const interval = setInterval(() => {
+      const cx = Math.random() * window.innerWidth;
+      const cy = Math.random() * window.innerHeight * 0.6;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      for (let i = 0; i < 18; i++) firework(cx, cy, color);
+      bursts++;
+      if (bursts >= 5) clearInterval(interval);
+    }, 400);
+  }
+
+  function update() {
+    const now  = Date.now();
+    const diff = TARGET - now;
+
+    if (diff <= 0) {
+      $('days').textContent    = '00';
+      $('hours').textContent   = '00';
+      $('minutes').textContent = '00';
+      $('seconds').textContent = '00';
+      if (!arrived) {
+        arrived = true;
+        document.querySelector('.title').textContent = '🎊';
+        document.querySelector('.target').textContent = '劳动节快乐！';
+        $('message').classList.add('show');
+        $('progressFill').style.width = '100%';
+        launchFireworks();
+      }
+      setTimeout(update, 1000);
+      return;
+    }
+
+    const days    = Math.floor(diff / 86400000);
+    const hours   = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000)  / 60000);
+    const seconds = Math.floor((diff % 60000)    / 1000);
+
+    const dEl = $('days'), hEl = $('hours'), mEl = $('minutes'), sEl = $('seconds');
+
+    if (dEl.textContent !== pad(days))  { dEl.textContent = pad(days);  tick(dEl); }
+    if (hEl.textContent !== pad(hours)) { hEl.textContent = pad(hours); tick(hEl); }
+    if (mEl.textContent !== pad(minutes)){ mEl.textContent = pad(minutes); tick(mEl); }
+    if (sEl.textContent !== pad(seconds)){ sEl.textContent = pad(seconds); tick(sEl); }
+
+    const pct = Math.min(100, ((now - START) / TOTAL) * 100);
+    $('progressFill').style.width = pct.toFixed(2) + '%';
+
+    setTimeout(update, 100);
+  }
+
+  // Stars
+  const starsEl = $('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top  = Math.random() * 100 + '%';
+    s.style.setProperty('--d', (1 + Math.random() * 3) + 's');
+    s.style.animationDelay = Math.random() * 3 + 's';
+    starsEl.appendChild(s);
+  }
+
+  update();
+</script>
+</body>
+</html>
