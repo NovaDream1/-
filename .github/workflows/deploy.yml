@@ -17,6 +17,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://novadream1.github.io/-/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
